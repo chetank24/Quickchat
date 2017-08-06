@@ -9,5 +9,6 @@ public class QuickchatApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(QuickchatApplication.class, args);
 		System.out.println("Hello");
+		System.out.println("Hi");
 	}
 }
