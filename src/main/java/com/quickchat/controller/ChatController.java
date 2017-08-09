@@ -1,26 +1,22 @@
 package com.quickchat.controller;
 
-import java.applet.AppletContext;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpRequest;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
 public class ChatController {
 	@Autowired
 	ServletContext context;
@@ -29,23 +25,30 @@ public class ChatController {
 	String jid = null;
 
 	@RequestMapping("/test")
-	public String msg(Model model, HttpSession httpSession,HttpServletRequest httpRequest) throws InterruptedException {
-		if (jid == null) {
+	public ResponseEntity<String> msg( HttpSession httpSession,HttpServletRequest httpRequest) throws InterruptedException {
+		if (jid == null && !db.containsKey(httpSession.getId()) ) {
 			jid = httpSession.getId();
-			return "Test";
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 		}
-		if (!jid.equals(httpSession.getId())) {
+		if (jid != null && !jid.equals(httpSession.getId())) {
 			db.put(httpSession.getId(), jid);
 			db.put(jid, httpSession.getId());
 			jid = null;
 		}
-		return msgPost(model, httpSession, httpRequest);
+		if(db.get(httpSession.getId())!= null && context.getAttribute(db.get(httpSession.getId()))==null)
+		{
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+		}
+
+
+		String partnerMsgs = (String) context.getAttribute(db.get(httpSession.getId()));
+		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
 	}
 
 	@RequestMapping(value = "/test", method = RequestMethod.POST)
-	public String msgPost(Model model, HttpSession httpSession, HttpServletRequest httpRequest) {
+	public ResponseEntity<String> msgPost(HttpSession httpSession, HttpServletRequest httpRequest) {
 		if (db.get(httpSession.getId()) == null)
-			return "Test";
+			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 
 		String myMessages =  (String) context.getAttribute(httpSession.getId());
 		if (myMessages == null) {
@@ -56,13 +59,9 @@ public class ChatController {
 		}
 
 		String partnerMsgs = (String) context.getAttribute(db.get(httpSession.getId()));
-
-		System.out.println("messages " + myMessages);
-		System.out.println("partnerMsgs " + partnerMsgs);
-		
-		model.addAttribute("me", myMessages);
-		model.addAttribute("you",partnerMsgs);
-		return "Test";
+		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
 	}
+	
+	
 
 }
