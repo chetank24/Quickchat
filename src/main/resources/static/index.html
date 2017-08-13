@@ -5,14 +5,19 @@
 <title>QuickChat</title>
 <script type="text/javascript" src="communicate.js">
 
+
+
 </script>
 
 </head>
-<body style="align-self: center;">
+<body style="align-self: center;" onload="setup()">
+<br>
+<div id="status"></div> <br>
 	<br>
 	<input id="message" name="message">
 	<input type="submit" onclick="sendMessage()">
-	<input type="submit" value="get" onclick="getMessage()">
-	<div id="demo"></div>
+	<div id="me"></div> <br>
+	<div id="you"> </div>
+	
 </body>
 </html>

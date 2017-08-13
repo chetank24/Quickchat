@@ -1,67 +1,74 @@
 package com.quickchat.controller;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ChatController {
-	@Autowired
-	ServletContext context;
-	public static List<String> waitlist = new ArrayList<>();
-	public Map<String, String> db = new HashMap<>();
-	String jid = null;
+	
+	public static String jid = null;
+	public static Map<String, String> mapping = new HashMap<>();
+	public static Map<String, String> messages = new HashMap<>();
 
-	@RequestMapping("/test")
-	public ResponseEntity<String> msg( HttpSession httpSession,HttpServletRequest httpRequest) throws InterruptedException {
-		if (jid == null && !db.containsKey(httpSession.getId()) ) {
+
+	
+	
+	@RequestMapping(value = "/setm")
+	public ResponseEntity<String> msgPost(HttpSession httpSession, HttpServletRequest httpRequest) {
+
+		if (mapping.get(httpSession.getId()) == null)
+			setup(httpSession, httpRequest);//return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+
+		String myMessages = httpRequest.getParameter("message");
+		messages.put(httpSession.getId(), myMessages);
+
+		return ResponseEntity.status(HttpStatus.OK).body(null);
+	}
+
+	@RequestMapping(value = "/getm")
+	public ResponseEntity<String> msgGet(HttpSession httpSession, HttpServletRequest httpRequest) {
+
+		if (mapping.get(httpSession.getId()) == null)
+			setup(httpSession, httpRequest);
+
+		String partnerMsgs = (String) messages.get(mapping.get(httpSession.getId()));
+		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
+	}
+	
+	
+	
+	@RequestMapping("/setup")
+	public ResponseEntity<String> setup( HttpSession httpSession,HttpServletRequest httpRequest) {
+		if (jid == null && !mapping.containsKey(httpSession.getId()) ) {
 			jid = httpSession.getId();
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+			return ResponseEntity.status(HttpStatus.OK).body("Waiting");
 		}
 		if (jid != null && !jid.equals(httpSession.getId())) {
-			db.put(httpSession.getId(), jid);
-			db.put(jid, httpSession.getId());
+			mapping.put(httpSession.getId(), jid);
+			mapping.put(jid, httpSession.getId());
 			jid = null;
 		}
-		if(db.get(httpSession.getId())!= null && context.getAttribute(db.get(httpSession.getId()))==null)
+		if(jid != null && mapping.get(jid)==null )
+			return ResponseEntity.status(HttpStatus.OK).body("Waiting");
+		/*if(mapping.get(httpSession.getId())!= null && context.getAttribute(mapping.get(httpSession.getId()))==null)
 		{
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
-		}
-
-
-		String partnerMsgs = (String) context.getAttribute(db.get(httpSession.getId()));
-		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
-	}
-
-	@RequestMapping(value = "/test", method = RequestMethod.POST)
-	public ResponseEntity<String> msgPost(HttpSession httpSession, HttpServletRequest httpRequest) {
-		if (db.get(httpSession.getId()) == null)
-			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
-
-		String myMessages =  (String) context.getAttribute(httpSession.getId());
-		if (myMessages == null) {
-			myMessages = httpRequest.getParameter("message");
-			context.setAttribute(httpSession.getId(), myMessages);
-		} else {
-			myMessages=httpRequest.getParameter("message");
-		}
-
-		String partnerMsgs = (String) context.getAttribute(db.get(httpSession.getId()));
-		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
+		}*/
+		return ResponseEntity.status(HttpStatus.OK).body("Connected");
 	}
 	
+	@RequestMapping("/clean")
+	public ResponseEntity<String> clean( HttpSession httpSession,HttpServletRequest httpRequest) {
+		mapping = new HashMap<>();
+		return ResponseEntity.status(HttpStatus.OK).body("Cleaned");
+	}
 	
-
 }
