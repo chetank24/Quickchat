@@ -10,14 +10,12 @@
 </script>
 
 </head>
-<body style="align-self: center;" onload="setup()">
-<br>
-<div id="status"></div> <br>
+<body style="align-self: center;" onload="setInterval(function(){ setup(); }, 1000);">
+<div id="status">Connecting...</div> <br>
 	<br>
-	<input id="message" name="message">
-	<input type="submit" onclick="sendMessage()">
-	<div id="me"></div> <br>
-	<div id="you"> </div>
 	
+	<div id="you" style="border: solid thin;height: 75%; width: 90%; position: absolute; text-align: left; bottom: 90px;overflow: auto; left: 5%; padding:10px;"> test</div>
+	<input id="messageInput" placeholder="Enter Message" name="message" autocomplete="off" onkeyup="runScript(event)" style="bottom: 40px; position: absolute; left: 5%;width: 400px; height: 30px;">
+	<input id="submitButton" type="submit" value="Send" onclick="sendMessage()" style="bottom: 40px; position: absolute; left: 520px; width: 100px;height: 35px;">
 </body>
 </html>

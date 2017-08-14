@@ -24,8 +24,8 @@ public class ChatController {
 	@RequestMapping(value = "/setm")
 	public ResponseEntity<String> msgPost(HttpSession httpSession, HttpServletRequest httpRequest) {
 
-		if (mapping.get(httpSession.getId()) == null)
-			setup(httpSession, httpRequest);//return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
+		//if (mapping.get(httpSession.getId()) == null)
+			//setup(httpSession, httpRequest);//return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
 
 		String myMessages = httpRequest.getParameter("message");
 		messages.put(httpSession.getId(), myMessages);
@@ -36,8 +36,8 @@ public class ChatController {
 	@RequestMapping(value = "/getm")
 	public ResponseEntity<String> msgGet(HttpSession httpSession, HttpServletRequest httpRequest) {
 
-		if (mapping.get(httpSession.getId()) == null)
-			setup(httpSession, httpRequest);
+		//if (mapping.get(httpSession.getId()) == null)
+			//setup(httpSession, httpRequest);
 
 		String partnerMsgs = (String) messages.get(mapping.get(httpSession.getId()));
 		return ResponseEntity.status(HttpStatus.OK).body(partnerMsgs);
@@ -49,6 +49,7 @@ public class ChatController {
 	public ResponseEntity<String> setup( HttpSession httpSession,HttpServletRequest httpRequest) {
 		if (jid == null && !mapping.containsKey(httpSession.getId()) ) {
 			jid = httpSession.getId();
+			System.out.println(httpSession.getId()+"  is waiting");
 			return ResponseEntity.status(HttpStatus.OK).body("Waiting");
 		}
 		if (jid != null && !jid.equals(httpSession.getId())) {
@@ -57,7 +58,10 @@ public class ChatController {
 			jid = null;
 		}
 		if(jid != null && mapping.get(jid)==null )
+		{
+			System.out.println(httpSession.getId()+"  is waiting");
 			return ResponseEntity.status(HttpStatus.OK).body("Waiting");
+		}
 		/*if(mapping.get(httpSession.getId())!= null && context.getAttribute(mapping.get(httpSession.getId()))==null)
 		{
 			return ResponseEntity.status(HttpStatus.ACCEPTED).body(null);
@@ -68,6 +72,7 @@ public class ChatController {
 	@RequestMapping("/clean")
 	public ResponseEntity<String> clean( HttpSession httpSession,HttpServletRequest httpRequest) {
 		mapping = new HashMap<>();
+		messages = new HashMap<>();
 		return ResponseEntity.status(HttpStatus.OK).body("Cleaned");
 	}
 	
